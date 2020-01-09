@@ -1,5 +1,7 @@
 import random
 
+from abc import ABC
+from abc import abstractmethod
 from utils import create_empty_board
 from utils import Dimension
 from utils import Direction
@@ -7,7 +9,7 @@ from utils import Entity
 from utils import Point
 
 
-class Snake:
+class Snake(ABC):
 
     def __init__(self):
         self.board = create_empty_board(Entity.Type.FREE)
@@ -46,7 +48,13 @@ class Snake:
         if not self._is_dead:
             self._move()
 
+    @abstractmethod
+    def _advance(self):
+        pass
+
     def _move(self):
+        self._advance()
+
         new_pos = self.head + self.direction
 
         def eatsByMoving(new_pos):

@@ -11,7 +11,7 @@ class GreedyChoosing(Snake):
     def __init__(self):
         Snake.__init__(self)
 
-    def advance(self):
+    def _advance(self):
         min_direction = Dimension.NUMBER_OF_ENTITIES_Y + Dimension.NUMBER_OF_ENTITIES_X
         mini_direction = None
 
@@ -38,7 +38,7 @@ class Lee(Snake):
         Snake.__init__(self)
         self.path = []
 
-    def advance(self):
+    def _advance(self):
         def Lee():
             def calculate_path(target):
                 start = self.head.copy()

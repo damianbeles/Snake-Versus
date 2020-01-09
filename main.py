@@ -1,10 +1,17 @@
+import algorithms
 import pygame
 
-from algorithms import GreedyChoosing
-from algorithms import Lee
+from datetime import datetime
 from player import Player
 from utils import CustomEvent
 from utils import Dimension
+
+FIRST_PLAYER_ALGORITHM = algorithms.GreedyChoosing
+SECOND_PLAYER_ALGORITHM = algorithms.Lee
+
+REPORT_FILE_NAME = f"{datetime.now():%d_%m_%Y___%H_%M_%S}.csv"
+with open(REPORT_FILE_NAME, 'w') as fout:
+    fout.write(f"{FIRST_PLAYER_ALGORITHM.__name__}, {SECOND_PLAYER_ALGORITHM.__name__}")
 
 
 def init_game_window():
@@ -31,6 +38,20 @@ def init_game_window():
     return game_window
 
 
+def generate_new_players():
+    players = [Player(Dimension.FIRST_BOARD_TOP_LEFT_X,
+                      Dimension.FIRST_BOARD_TOP_LEFT_Y,
+                      FIRST_PLAYER_ALGORITHM()),
+               Player(Dimension.SECOND_BOARD_TOP_LEFT_X,
+                      Dimension.SECOND_BOARD_TOP_LEFT_Y,
+                      SECOND_PLAYER_ALGORITHM())]
+
+    players[0].snake.set_enemy(players[1].snake)
+    players[1].snake.set_enemy(players[0].snake)
+
+    return players
+
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Snake Versus Prototype')
@@ -42,15 +63,7 @@ if __name__ == '__main__':
     pygame.time.set_timer(CustomEvent.SECOND_PLAYER_MOVE_EVENT,
                           CustomEvent.SECOND_PLAYER_MOVE_EVENT_TIMER)
 
-    players = [Player(Dimension.FIRST_BOARD_TOP_LEFT_X,
-                      Dimension.FIRST_BOARD_TOP_LEFT_Y,
-                      GreedyChoosing()),
-               Player(Dimension.SECOND_BOARD_TOP_LEFT_X,
-                      Dimension.SECOND_BOARD_TOP_LEFT_Y,
-                      Lee())]
-
-    players[0].snake.set_enemy(players[1].snake)
-    players[1].snake.set_enemy(players[0].snake)
+    players = generate_new_players()
 
     running = True
     while running:
@@ -63,12 +76,20 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    players = generate_new_players()
+
             if event.type == CustomEvent.FIRST_PLAYER_MOVE_EVENT:
-                players[0].snake.advance()
                 players[0].snake.move()
 
             if event.type == CustomEvent.SECOND_PLAYER_MOVE_EVENT:
-                players[1].snake.advance()
                 players[1].snake.move()
+
+            if players[0].snake._is_dead and players[1].snake._is_dead:
+                with open(REPORT_FILE_NAME, 'a') as fout:
+                    fout.write(f"\n{len(players[0].snake.tail)}, {len(players[1].snake.tail)}")
+
+                players = generate_new_players()
 
     pygame.quit()
