@@ -17,6 +17,12 @@ class Point:
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __str__(self):  # For debug purpose
+        return f"({self.row}, {self.col})"
+
+    def copy(self):
+        return Point(self.row, self.col)
+
 
 class Entity:
 
@@ -40,10 +46,10 @@ class Entity:
 class CustomEvent:
 
     FIRST_PLAYER_MOVE_EVENT = pygame.USEREVENT + 1
-    FIRST_PLAYER_MOVE_EVENT_TIMER = 10
+    FIRST_PLAYER_MOVE_EVENT_TIMER = 1
 
     SECOND_PLAYER_MOVE_EVENT = pygame.USEREVENT + 2
-    SECOND_PLAYER_MOVE_EVENT_TIMER = 10
+    SECOND_PLAYER_MOVE_EVENT_TIMER = 1
 
 
 class Direction:
@@ -75,3 +81,10 @@ class Dimension:
 
     SECOND_BOARD_TOP_LEFT_X = 2 * WIDTH_ALIGNMENT + BOARD_WIDTH
     SECOND_BOARD_TOP_LEFT_Y = HEIGHT_ALIGNMENT
+
+    BOARD_SIZE = [int(BOARD_WIDTH / Entity.WIDTH),
+                  int(BOARD_HEIGHT / Entity.HEIGHT)]
+
+
+def create_empty_board(default_value):
+    return [[default_value] * Dimension.BOARD_SIZE[0] for _ in range(Dimension.BOARD_SIZE[1])]

@@ -1,6 +1,7 @@
 import pygame
 
 from algorithms import GreedyChoosing
+from algorithms import Lee
 from player import Player
 from utils import CustomEvent
 from utils import Dimension
@@ -46,7 +47,7 @@ if __name__ == '__main__':
                       GreedyChoosing()),
                Player(Dimension.SECOND_BOARD_TOP_LEFT_X,
                       Dimension.SECOND_BOARD_TOP_LEFT_Y,
-                      GreedyChoosing())]
+                      Lee())]
 
     players[0].snake.set_enemy(players[1].snake)
     players[1].snake.set_enemy(players[0].snake)

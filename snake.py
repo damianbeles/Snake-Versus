@@ -1,5 +1,6 @@
 import random
 
+from utils import create_empty_board
 from utils import Dimension
 from utils import Direction
 from utils import Entity
@@ -9,9 +10,7 @@ from utils import Point
 class Snake:
 
     def __init__(self):
-        BOARD_SIZE = [int(Dimension.BOARD_WIDTH / Entity.WIDTH),
-                      int(Dimension.BOARD_HEIGHT / Entity.HEIGHT)]
-        self.board = [[Entity.Type.FREE] * BOARD_SIZE[0] for _ in range(BOARD_SIZE[1])]
+        self.board = create_empty_board(Entity.Type.FREE)
 
         self.head = Point(0, 0)
         self.tail = []
@@ -26,6 +25,8 @@ class Snake:
         self.board[self.head.row][self.head.col] = Entity.Type.HEAD
         self.board[self.food.row][self.food.col] = Entity.Type.FOOD
 
+        self._is_dead = False
+
     def set_enemy(self, enemy):
         self.enemy = enemy
 
@@ -39,9 +40,13 @@ class Snake:
 
     def _canMoveTowards(self, new_pos):
         return self.board[new_pos.row][new_pos.col] == Entity.Type.FREE or\
-               self.board[new_pos.row][new_pos.col] == Entity.Type.FOOD
+            self.board[new_pos.row][new_pos.col] == Entity.Type.FOOD
 
     def move(self):
+        if not self._is_dead:
+            self._move()
+
+    def _move(self):
         new_pos = self.head + self.direction
 
         def eatsByMoving(new_pos):
@@ -49,7 +54,7 @@ class Snake:
 
         def diesByMoving(new_pos):
             return self.board[new_pos.row][new_pos.col] == Entity.Type.WALL or\
-                   self.board[new_pos.row][new_pos.col] == Entity.Type.TAIL
+                self.board[new_pos.row][new_pos.col] == Entity.Type.TAIL
 
         if not diesByMoving(new_pos):
             if eatsByMoving(new_pos):
@@ -77,3 +82,6 @@ class Snake:
                 del self.tail[-1]
 
             self.board[new_pos.row][new_pos.col] = Entity.Type.HEAD
+
+        else:
+            self._is_dead = True
