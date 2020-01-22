@@ -19,7 +19,7 @@ class Snake(ABC):
 
         self.direction = Direction.EAST
 
-        self.enemy = None
+        self.enemy = self
 
         self.food = Point(random.randint(1, Dimension.NUMBER_OF_ENTITIES_Y - 1),
                           random.randint(1, Dimension.NUMBER_OF_ENTITIES_X - 1))
@@ -28,9 +28,6 @@ class Snake(ABC):
         self.board[self.food.row][self.food.col] = Entity.Type.FOOD
 
         self._is_dead = False
-
-    def set_enemy(self, enemy):
-        self.enemy = enemy
 
     def set_wall(self, wall_pos):
         if self.board[wall_pos.row][wall_pos.col] == Entity.Type.FREE:
@@ -67,7 +64,7 @@ class Snake(ABC):
         if not diesByMoving(new_pos):
             if eatsByMoving(new_pos):
                 self.tail.insert(0, self.head)
-                self.enemy.set_wall(self.head)
+                self.enemy.set_wall(self.food)
 
                 self.board[self.head.row][self.head.col] = Entity.Type.TAIL
                 self.head = new_pos

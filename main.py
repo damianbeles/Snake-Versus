@@ -5,19 +5,20 @@ from datetime import datetime
 from player import Player
 from utils import CustomEvent
 from utils import Dimension
+from utils import Entity
 
 FIRST_PLAYER_ALGORITHM = algorithms.GreedyChoosing
 SECOND_PLAYER_ALGORITHM = algorithms.Lee
 
 REPORT_FILE_NAME = f"{datetime.now():%d_%m_%Y___%H_%M_%S}.csv"
 with open(REPORT_FILE_NAME, 'w') as fout:
-    fout.write(f"{FIRST_PLAYER_ALGORITHM.__name__}, {SECOND_PLAYER_ALGORITHM.__name__}")
+    fout.write(f"{FIRST_PLAYER_ALGORITHM.__name__},{SECOND_PLAYER_ALGORITHM.__name__},Winner")
 
 
 def init_game_window():
     game_window = pygame.display.set_mode([Dimension.SCREEN_WIDTH,
                                            Dimension.SCREEN_HEIGHT])
-    game_window.fill(pygame.Color('white'))
+    game_window.fill(Entity.PygameColor[Entity.Type.FREE])
 
     pygame.draw.rect(game_window,
                      pygame.Color('black'),
@@ -46,10 +47,21 @@ def generate_new_players():
                       Dimension.SECOND_BOARD_TOP_LEFT_Y,
                       SECOND_PLAYER_ALGORITHM())]
 
-    players[0].snake.set_enemy(players[1].snake)
-    players[1].snake.set_enemy(players[0].snake)
+    players[0].set_enemy(players[1])
+    players[1].set_enemy(players[0])
 
     return players
+
+
+def generate_report_entry(players):
+    with open(REPORT_FILE_NAME, 'a') as fout:
+        if players[0].get_score() > players[1].get_score():
+            winner = "first"
+        elif players[0].get_score() == players[1].get_score():
+            winner = "tie"
+        else:
+            winner = "second"
+        fout.write(f"\n{players[0].get_score()},{players[1].get_score()},{winner}")
 
 
 if __name__ == '__main__':
@@ -81,14 +93,14 @@ if __name__ == '__main__':
                     players = generate_new_players()
 
             if event.type == CustomEvent.FIRST_PLAYER_MOVE_EVENT:
-                players[0].snake.move()
+                players[0].move()
 
             if event.type == CustomEvent.SECOND_PLAYER_MOVE_EVENT:
-                players[1].snake.move()
+                players[1].move()
 
-            if players[0].snake._is_dead and players[1].snake._is_dead:
-                with open(REPORT_FILE_NAME, 'a') as fout:
-                    fout.write(f"\n{len(players[0].snake.tail)}, {len(players[1].snake.tail)}")
+            if players[0].is_dead() and\
+               players[1].is_dead():
+                generate_report_entry(players)
 
                 players = generate_new_players()
 
