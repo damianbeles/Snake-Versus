@@ -11,11 +11,13 @@ from utils import Point
 
 class Snake(ABC):
 
-    def __init__(self):
+    def play(self):
         self.board = create_empty_board(Entity.Type.FREE)
 
         self.head = Point(0, 0)
         self.tail = []
+
+        self.moved_without_eating = 0
 
         self.direction = Direction.EAST
 
@@ -28,6 +30,17 @@ class Snake(ABC):
         self.board[self.food.row][self.food.col] = Entity.Type.FOOD
 
         self._is_dead = False
+        self._has_eaten = False
+
+    def __init__(self):
+        self.play()
+
+    @abstractmethod
+    def _save(self):
+        pass
+
+    def save(self):
+        self._save()
 
     def set_wall(self, wall_pos):
         if self.board[wall_pos.row][wall_pos.col] == Entity.Type.FREE:
@@ -49,9 +62,14 @@ class Snake(ABC):
     def _advance(self):
         pass
 
+    @abstractmethod
+    def _post_advance(self):
+        pass
+
     def _move(self):
         self._advance()
 
+        self.moved_without_eating += 1
         new_pos = self.head + self.direction
 
         def eatsByMoving(new_pos):
@@ -62,12 +80,12 @@ class Snake(ABC):
                 self.board[new_pos.row][new_pos.col] == Entity.Type.TAIL
 
         if not diesByMoving(new_pos):
-            if eatsByMoving(new_pos):
-                self.tail.insert(0, self.head)
-                self.enemy.set_wall(self.food)
+            self.tail.insert(0, self.head)
+            self.board[self.head.row][self.head.col] = Entity.Type.TAIL
+            self.head = new_pos
 
-                self.board[self.head.row][self.head.col] = Entity.Type.TAIL
-                self.head = new_pos
+            if eatsByMoving(new_pos):
+                self.enemy.set_wall(self.food)
 
                 food_possibilities = []
                 for npos in range(len(self.board)):
@@ -78,11 +96,6 @@ class Snake(ABC):
                 self.board[self.food.row][self.food.col] = Entity.Type.FOOD
 
             else:
-                self.tail.insert(0, self.head)
-
-                self.board[self.head.row][self.head.col] = Entity.Type.TAIL
-                self.head = new_pos
-
                 self.board[self.tail[-1].row][self.tail[-1].col] = Entity.Type.FREE
                 del self.tail[-1]
 
@@ -90,3 +103,10 @@ class Snake(ABC):
 
         else:
             self._is_dead = True
+
+        if self.moved_without_eating == Dimension.NUMBER_OF_ENTITIES_X * Dimension.NUMBER_OF_ENTITIES_Y:
+            self._is_dead = True
+
+        self._post_advance()
+
+        self._has_eaten = False

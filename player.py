@@ -32,3 +32,9 @@ class Player:
 
     def get_score(self):
         return len(self._snake.tail)
+
+    def play(self):
+        self._snake.play()
+    
+    def save(self):
+        self._snake.save()

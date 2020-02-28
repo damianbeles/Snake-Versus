@@ -31,6 +31,12 @@ class GreedyChoosing(Snake):
         if mini_direction is not None:
             self._change_direction(Direction.directions[mini_direction])
 
+    def _post_advance(self):
+        pass
+
+    def _save(self):
+        pass
+
 
 class Lee(Snake):
 
@@ -89,3 +95,10 @@ class Lee(Snake):
         if self.path != []:
             self._change_direction(self.path[0])
             del self.path[0]
+
+    def _post_advance(self):
+        pass
+
+    def _save(self):
+        pass
+
