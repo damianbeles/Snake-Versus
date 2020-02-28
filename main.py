@@ -8,7 +8,7 @@ from utils import Dimension
 from utils import Entity
 
 FIRST_PLAYER_ALGORITHM = algorithms.GreedyChoosing
-SECOND_PLAYER_ALGORITHM = algorithms.Lee
+SECOND_PLAYER_ALGORITHM = algorithms.GreedyChoosing
 
 REPORT_FILE_NAME = f"reports/{datetime.now():%d_%m_%Y___%H_%M_%S}.csv"
 with open(REPORT_FILE_NAME, 'w') as fout:
@@ -105,4 +105,6 @@ if __name__ == '__main__':
 
             play_new_game(players)
 
+    players[0].save()
+    players[1].save()
     pygame.quit()

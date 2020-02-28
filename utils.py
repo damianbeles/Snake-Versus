@@ -17,8 +17,8 @@ class Point:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def __str__(self):  # For debug purpose
-        return f"({self.row}, {self.col})"
+    def __hash__(self):
+        return hash(tuple([self.row, self.col]))
 
     def copy(self):
         return Point(self.row, self.col)
@@ -60,6 +60,20 @@ class Direction:
     NORTH = Point(-1, 0)
 
     directions = [EAST, SOUTH, WEST, NORTH]
+
+    rights = {
+        NORTH: EAST,
+        EAST: SOUTH,
+        SOUTH: WEST,
+        WEST: NORTH
+    }
+
+    lefts = {
+        NORTH: WEST,
+        WEST: SOUTH,
+        SOUTH: EAST,
+        EAST: NORTH
+    }
 
 
 class Dimension:

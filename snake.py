@@ -95,6 +95,8 @@ class Snake(ABC):
                 self.food = food_possibilities[random.randint(0, len(food_possibilities) - 1)]
                 self.board[self.food.row][self.food.col] = Entity.Type.FOOD
 
+                self._has_eaten = True
+
             else:
                 self.board[self.tail[-1].row][self.tail[-1].col] = Entity.Type.FREE
                 del self.tail[-1]
