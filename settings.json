@@ -1,0 +1,73 @@
+{
+    "first_player": {
+        "algorithm": "Greedy Choosing",
+        "name": "Vesca",
+        "controls": [
+            "a",
+            "s",
+            "d",
+            "w"
+        ],
+        "skin": {
+            "WALL": [
+                0,
+                0,
+                0
+            ],
+            "HEAD": [
+                255,
+                128,
+                0
+            ],
+            "TAIL": [
+                0,
+                255,
+                0
+            ],
+            "FOOD": [
+                255,
+                0,
+                0
+            ]
+        }
+    },
+    "second_player": {
+        "algorithm": "Human",
+        "name": "Rocky",
+        "controls": [
+            "\u2190",
+            "\u2193",
+            "\u2192",
+            "\u2191"
+        ],
+        "skin": {
+            "WALL": [
+                0,
+                0,
+                0
+            ],
+            "HEAD": [
+                255,
+                128,
+                0
+            ],
+            "TAIL": [
+                0,
+                255,
+                0
+            ],
+            "FOOD": [
+                255,
+                0,
+                0
+            ]
+        }
+    },
+    "entity": {
+        "width": 16,
+        "height": 16,
+        "nof_x": 32,
+        "nof_y": 32
+    },
+    "speed": 10
+}

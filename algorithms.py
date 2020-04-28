@@ -5,11 +5,14 @@ from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.utils import to_categorical
 
+from player import Player
 from snake import Snake
 from utils import create_empty_board
+from utils import CustomEvent
 from utils import Dimension
 from utils import Direction
 from utils import Entity
+from utils import settings_json
 from utils import Point
 
 
@@ -207,3 +210,29 @@ class DQN(Snake):
 
     def _save(self):
         self.model.save_weights('weights.hdf5')
+
+
+class Human(Snake):
+
+    def __init__(self):
+        Snake.__init__(self)
+
+    def _advance(self):
+        player = "first_player"
+        current_player_key = CustomEvent.FIRST_PLAYER_LAST_PRESSED_KEY
+
+        if self.id == 1:
+            player = "second_player"
+            current_player_key = CustomEvent.SECOND_PLAYER_LAST_PRESSED_KEY
+
+        DirectionMap = {0: Direction.WEST, 1: Direction.SOUTH, 2: Direction.EAST, 3: Direction.NORTH}
+
+        for index in [0, 1, 2, 3]:
+            if settings_json[player]["controls"][index] == Player.KEYS[current_player_key]:
+                self._change_direction(DirectionMap[index])
+
+    def _post_advance(self):
+        pass
+
+    def _save(self):
+        pass
