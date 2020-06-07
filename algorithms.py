@@ -121,7 +121,9 @@ class DQN(Snake):
         self.reward = 0
         self.gamma = 0.9
         self.learning_rate = 0.0005
-        self.model = self.network()
+        self.model = self.network('dqn_after_500_games.hdf5')
+
+        self.is_training = False
 
     def set_reward(self):
         self.reward = 0
@@ -195,6 +197,9 @@ class DQN(Snake):
             self._change_direction(Direction.lefts[self.direction])
 
     def _post_advance(self):
+        if not self.is_training:
+            return
+
         self.new_state = self.get_state()
         self.set_reward()
 
