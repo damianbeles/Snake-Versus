@@ -118,9 +118,6 @@ class DQN(Snake):
     def __init__(self):
         Snake.__init__(self)
 
-        self.vision = 3
-        self.input_dim = (self.vision * 2 + 1) ** 2 + 8
-
         self.reward = 0
         self.gamma = 0.9
         self.learning_rate = 0.0005
@@ -138,7 +135,7 @@ class DQN(Snake):
     def network(self, weights=None):
         model = Sequential()
 
-        model.add(Dense(input_dim=self.input_dim, units=120, activation='relu'))
+        model.add(Dense(input_dim=11, units=120, activation='relu'))
         model.add(Dropout(0.15))
 
         model.add(Dense(units=120, activation='relu'))
@@ -157,14 +154,14 @@ class DQN(Snake):
         return model
 
     def get_state(self):
-        # straight = self.head + self.direction
-        # left = self.head + Direction.lefts[self.direction]
-        # right = self.head + Direction.rights[self.direction]
+        straight = self.head + self.direction
+        left = self.head + Direction.lefts[self.direction]
+        right = self.head + Direction.rights[self.direction]
 
         state = [
-            # self.board[straight.row][straight.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger straight
-            # self.board[left.row][left.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger left
-            # self.board[right.row][right.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger right
+            self.board[straight.row][straight.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger straight
+            self.board[left.row][left.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger left
+            self.board[right.row][right.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger right
 
             self.direction == Direction.WEST,  # heading left
             self.direction == Direction.EAST,  # heading right
@@ -176,21 +173,6 @@ class DQN(Snake):
             self.food.row < self.head.row,  # food up
             self.food.row > self.head.row  # food down
         ]
-
-        snake_vision = []
-        start_point = Point(self.head.row, self.head.col) + Point(-self.vision, -self.vision)
-        end_point = Point(self.head.row, self.head.col) + Point(self.vision, self.vision)
-
-        current_point = start_point.copy()
-        while current_point.row != (end_point.row + 1) % Dimension.NUMBER_OF_ENTITIES_Y:
-            snake_vision.append(self.board[current_point.row][current_point.col] in [Entity.Type.WALL, Entity.Type.TAIL])
-            if current_point.col == end_point.col:
-                current_point.col = start_point.col % Dimension.NUMBER_OF_ENTITIES_X
-                current_point.row = (current_point.row + 1) % Dimension.NUMBER_OF_ENTITIES_Y
-            else:
-                current_point.col = (current_point.col + 1) % Dimension.NUMBER_OF_ENTITIES_X
-
-        state.extend(snake_vision)
 
         for index in range(len(state)):
             state_value = 0
@@ -204,7 +186,7 @@ class DQN(Snake):
 
     def _advance(self):
         self.old_state = self.get_state()
-        prediction = self.model.predict(self.old_state.reshape((1, self.input_dim)))
+        prediction = self.model.predict(self.old_state.reshape((1, 11)))
         self.final_move = to_categorical(np.argmax(prediction[0]), num_classes=3)
 
         if np.array_equal(self.final_move, [0, 0, 1]):
@@ -218,13 +200,13 @@ class DQN(Snake):
 
         target = self.reward
         if not self._is_dead:
-            prediction = self.model.predict(self.new_state.reshape((1, self.input_dim)))
+            prediction = self.model.predict(self.new_state.reshape((1, 11)))
             target = self.reward + self.gamma * np.amax(prediction[0])
 
-        target_f = self.model.predict(self.old_state.reshape((1, self.input_dim)))
+        target_f = self.model.predict(self.old_state.reshape((1, 11)))
         target_f[0][np.argmax(self.final_move)] = target
 
-        self.model.fit(self.old_state.reshape((1, self.input_dim)), target_f, epochs=1, verbose=0)
+        self.model.fit(self.old_state.reshape((1, 11)), target_f, epochs=1, verbose=0)
 
     def _save(self):
         self.model.save_weights('weights.hdf5')
@@ -239,7 +221,7 @@ class Human(Snake):
         player = "first_player"
         current_player_key = CustomEvent.FIRST_PLAYER_LAST_PRESSED_KEY
 
-        if self.id == 1:  # outside injection
+        if self.id == 1:
             player = "second_player"
             current_player_key = CustomEvent.SECOND_PLAYER_LAST_PRESSED_KEY
 
