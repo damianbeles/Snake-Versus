@@ -96,6 +96,7 @@ class Snake(ABC):
                 self.board[self.food.row][self.food.col] = Entity.Type.FOOD
 
                 self._has_eaten = True
+                self.moved_without_eating = 0
 
             else:
                 self.board[self.tail[-1].row][self.tail[-1].col] = Entity.Type.FREE
