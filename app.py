@@ -1,6 +1,7 @@
 import json
 import PIL.Image
 import pygame
+import pygame.freetype
 import os
 import threading
 
@@ -14,6 +15,14 @@ from player import Player
 from utils import *
 
 import algorithms
+
+
+algorithmsMap = {"Human": algorithms.Human,
+                 "Greedy Choosing": algorithms.GreedyChoosing,
+                 "Lee's Algorithm": algorithms.Lee,
+                 "Deep Q Learning": algorithms.DQN}
+
+AVAILABLE_ALGORITHMS = ["Greedy Choosing", "Lee's Algorithm", "Deep Q Learning", "Human"]
 
 
 class App(Tk):
@@ -80,11 +89,7 @@ class App(Tk):
 
 class Game(Toplevel):
 
-    def init_game_window(self):
-        game_window = pygame.display.set_mode([Dimension.SCREEN_WIDTH,
-                                            Dimension.SCREEN_HEIGHT])
-        game_window.fill(pygame.Color('white'))
-
+    def _draw_borders(self, game_window):
         pygame.draw.rect(game_window,
                         pygame.Color('black'),
                         [Dimension.FIRST_BOARD_TOP_LEFT_X - 2,
@@ -101,7 +106,40 @@ class Game(Toplevel):
                         Dimension.BOARD_HEIGHT + 1],
                         True)
 
+    def _init_game_window(self):
+        game_window = pygame.display.set_mode([Dimension.SCREEN_WIDTH,
+                                            Dimension.SCREEN_HEIGHT])
+        game_window.fill(pygame.Color('white'))
+
+        self._draw_borders(game_window)
+
         return game_window
+
+    def _update_window(self, game_window, players):
+        game_window.fill(pygame.Color('white'))
+
+        for player in players:
+            player.draw_on_display(game_window)
+
+        self._draw_borders(game_window)
+
+        self._GEORGIA.render_to(game_window,
+                                (Dimension.FIRST_BOARD_TOP_LEFT_X - 2, Dimension.FIRST_BOARD_TOP_LEFT_Y - 24),
+                                f"{self.fp_name}: {players[0].get_score()}",
+                                pygame.Color('black'))
+        self._GEORGIA.render_to(game_window,
+                                (Dimension.SECOND_BOARD_TOP_LEFT_X - 2, Dimension.SECOND_BOARD_TOP_LEFT_Y - 24),
+                                f"{self.sp_name}: {players[1].get_score()}",
+                                pygame.Color('black'))
+        last_winner = self.fp_name if self.winner == "first" else self.sp_name
+        if self.winner == "tie":
+            last_winner = "TIE"
+        self._GEORGIA.render_to(game_window,
+                                (Dimension.FIRST_BOARD_TOP_LEFT_X - 2, Dimension.FIRST_BOARD_TOP_LEFT_Y + Dimension.BOARD_HEIGHT + 3),
+                                f"Last winner: {last_winner}",
+                                pygame.Color('black'))
+
+        pygame.display.flip()
 
     def play_new_game(self, players):
         players[0].play()
@@ -113,37 +151,35 @@ class Game(Toplevel):
     def generate_report_entry(self, players):
         with open(self.REPORT_FILE_NAME, 'a') as fout:
             if players[0].get_score() > players[1].get_score():
-                winner = "first"
+                self.winner = "first"
             elif players[0].get_score() == players[1].get_score():
-                winner = "tie"
+                self.winner = "tie"
             else:
-                winner = "second"
-            fout.write(f"\n{players[0].get_score()},{players[1].get_score()},{winner}")
+                self.winner = "second"
+            fout.write(f"\n{players[0].get_score()},{players[1].get_score()},{self.winner}")
 
     def __init__(self, parent):
         super().__init__(parent)
         self.withdraw()
 
-        algorithmsMap = {'Human': algorithms.Human,
-                         'Greedy Choosing': algorithms.GreedyChoosing,
-                         'Lee\'s Algorithm': algorithms.Lee,
-                         'Deep Q Learning': algorithms.DQN}
+        self.winner = "tie"
 
         FIRST_PLAYER_ALGORITHM = algorithmsMap[settings_json["first_player"]["algorithm"]]
         SECOND_PLAYER_ALGORITHM = algorithmsMap[settings_json["second_player"]["algorithm"]]
 
         self.REPORT_FILE_NAME = f"reports/{datetime.now():%d_%m_%Y___%H_%M_%S}.csv"
-        first = FIRST_PLAYER_ALGORITHM.__name__
-        second = SECOND_PLAYER_ALGORITHM.__name__
-        if first == 'Human':
-            first = settings_json["first_player"]["name"]
-        if second == 'Human':
-            second = settings_json["second_player"]["name"]
+        self.fp_name = FIRST_PLAYER_ALGORITHM.__name__
+        self.sp_name = SECOND_PLAYER_ALGORITHM.__name__
+        if self.fp_name == 'Human':
+            self.fp_name = settings_json["first_player"]["name"]
+        if self.sp_name == 'Human':
+            self.sp_name = settings_json["second_player"]["name"]
         with open(self.REPORT_FILE_NAME, 'w') as fout:
-            fout.write(f"{first},{second},Winner")
+            fout.write(f"{self.fp_name},{self.sp_name},Winner")
 
         os.environ['SDL_VIDEO_CENTERED'] = '1'
         pygame.init()
+        self._GEORGIA = pygame.freetype.SysFont("Georgia", 20)
         pygame.display.set_icon(pygame.image.load(r'./resources/snake.ico'))
         pygame.display.set_caption('Snake Versus')
 
@@ -156,7 +192,7 @@ class Game(Toplevel):
 
         self.play_new_game(players)
 
-        game_window = self.init_game_window()
+        game_window = self._init_game_window()
 
         pygame.time.set_timer(CustomEvent.FIRST_PLAYER_MOVE_EVENT,
                               CustomEvent.FIRST_PLAYER_MOVE_EVENT_TIMER)
@@ -165,10 +201,7 @@ class Game(Toplevel):
 
         running = True
         while running:
-            for player in players:
-                player.draw_on_display(game_window)
-
-            pygame.display.flip()
+            self._update_window(game_window, players)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -222,8 +255,6 @@ class UserSettings(Toplevel):
     LAST_Y = 0
     POSSIBLE_KEYS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
                      'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '→', '←', '↑', '↓']
-
-    AVAILABLE_ALGORITHMS = ["Greedy Choosing", "Lee's Algorithm", "Deep Q Learning", "Human"]
 
     def __init__(self, parent, x, y):
         super().__init__(parent)
@@ -316,13 +347,13 @@ class UserSettings(Toplevel):
         off_x = self.algo_label.winfo_reqwidth() / 2
         self.algo_label.place(relx=0.5, x=-int(off_x), y=8 * int(off_y) + 11 * 5)
 
-        self.fa = FOptionMenu(self, settings_json["first_player"]["algorithm"], Font(family="Georgia", size=14), *UserSettings.AVAILABLE_ALGORITHMS)
+        self.fa = FOptionMenu(self, settings_json["first_player"]["algorithm"], Font(family="Georgia", size=14), *AVAILABLE_ALGORITHMS)
         self.fa.config(width=20)
         self.fa.pack()
         off_x = self.fa.winfo_reqwidth() / 2
         self.fa.place(relx=0.50, x=-int(off_x), y=9 * int(off_y) + 12 * 5)
 
-        self.sa = FOptionMenu(self, settings_json["second_player"]["algorithm"], Font(family="Georgia", size=14), *UserSettings.AVAILABLE_ALGORITHMS)
+        self.sa = FOptionMenu(self, settings_json["second_player"]["algorithm"], Font(family="Georgia", size=14), *AVAILABLE_ALGORITHMS)
         self.sa.config(width=20)
         self.sa.pack()
         off_x = self.sa.winfo_reqwidth() / 2
