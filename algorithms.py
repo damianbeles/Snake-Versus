@@ -161,19 +161,19 @@ class DQN(Snake):
         right = self.head + Direction.rights[self.direction]
 
         state = [
-            self.board[straight.row][straight.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger straight
-            self.board[left.row][left.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger left
-            self.board[right.row][right.col] in [Entity.Type.WALL, Entity.Type.TAIL],  # danger right
+            self.board[straight.row][straight.col] in [Entity.Type.WALL, Entity.Type.TAIL],
+            self.board[left.row][left.col] in [Entity.Type.WALL, Entity.Type.TAIL],
+            self.board[right.row][right.col] in [Entity.Type.WALL, Entity.Type.TAIL],
 
-            self.direction == Direction.WEST,  # heading left
-            self.direction == Direction.EAST,  # heading right
-            self.direction == Direction.NORTH,  # heading up
-            self.direction == Direction.SOUTH,  # heading down
+            self.direction == Direction.WEST,
+            self.direction == Direction.EAST,
+            self.direction == Direction.NORTH,
+            self.direction == Direction.SOUTH,
 
-            self.food.col < self.head.col,  # food left
-            self.food.col > self.head.col,  # food right
-            self.food.row < self.head.row,  # food up
-            self.food.row > self.head.row  # food down
+            self.food.col < self.head.col,
+            self.food.col > self.head.col,
+            self.food.row < self.head.row,
+            self.food.row > self.head.row
         ]
 
         for index in range(len(state)):
