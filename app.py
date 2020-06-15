@@ -22,7 +22,7 @@ algorithmsMap = {"Human": algorithms.Human,
                  "Lee's Algorithm": algorithms.Lee,
                  "Deep Q Learning": algorithms.DQN}
 
-AVAILABLE_ALGORITHMS = ["Greedy Choosing", "Lee's Algorithm", "Deep Q Learning", "Human"]
+AVAILABLE_ALGORITHMS = algorithmsMap.keys()
 
 
 class App(Tk):
