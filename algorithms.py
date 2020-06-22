@@ -48,6 +48,76 @@ class GreedyChoosing(Snake):
         pass
 
 
+class DFS(Snake):
+
+    def __init__(self):
+        Snake.__init__(self)
+        self.path = []
+
+    def _advance(self):
+        def DFS():
+            def calculate_path(target):
+                start = self.head.copy()
+
+                cur_path = [target]
+                while target != start:
+                    target = parrent_board[target.row][target.col]
+                    cur_path.append(target)
+
+                for index in range(len(cur_path) - 1, 0, -1):
+                    for direction in Direction.directions:
+                        if cur_path[index] + direction == cur_path[index - 1]:
+                            self.path.append(direction)
+
+            visited_board = create_empty_board(0)
+            parrent_board = create_empty_board(Point(0, 0).copy())
+            stack = [self.head.copy()]
+
+            last_calculated_pos = None
+
+            while stack != []:
+                cur_pos = stack[-1].copy()
+                del stack[-1]
+
+                if visited_board[cur_pos.row][cur_pos.col] != 1:
+                    visited_board[cur_pos.row][cur_pos.col] = 1
+
+                    for direction in Direction.directions:
+                        new_pos = cur_pos + direction
+
+                        if self.board[new_pos.row][new_pos.col] not in [Entity.Type.TAIL, Entity.Type.WALL] and\
+                           visited_board[new_pos.row][new_pos.col] == 0:
+                            parrent_board[new_pos.row][new_pos.col] = cur_pos
+                            stack.append(new_pos)
+                            last_calculated_pos = new_pos
+
+                        if new_pos == self.food:
+                            calculate_path(self.food.copy())
+                            return
+
+            if last_calculated_pos is not None:
+                calculate_path(last_calculated_pos)
+            else:
+                self.path = [Direction.NORTH]
+
+        if self.path == []:
+            DFS()
+
+        elif not self._canMoveTowards(self.head + self.path[0]):
+            self.path = []
+            DFS()
+
+        if self.path != []:
+            self._change_direction(self.path[0])
+            del self.path[0]
+
+    def _post_advance(self):
+        pass
+
+    def _save(self):
+        pass
+
+
 class Lee(Snake):
 
     def __init__(self):
