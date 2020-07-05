@@ -188,6 +188,11 @@ class DQN(Snake):
     def __init__(self):
         Snake.__init__(self)
 
+        self.drop_percantage = 0.15
+        self.output_layer_size = 3
+        self.hidden_layer_size = 120
+        self.input_layer_size = 11
+
         self.reward = 0
         self.gamma = 0.9
         self.learning_rate = 0.0005
@@ -207,16 +212,16 @@ class DQN(Snake):
     def network(self, weights=None):
         model = Sequential()
 
-        model.add(Dense(input_dim=11, units=120, activation='relu'))
-        model.add(Dropout(0.15))
+        model.add(Dense(input_dim=self.input_layer_size, units=self.hidden_layer_size, activation='relu'))
+        model.add(Dropout(self.drop_percantage))
 
-        model.add(Dense(units=120, activation='relu'))
-        model.add(Dropout(0.15))
+        model.add(Dense(units=self.hidden_layer_size, activation='relu'))
+        model.add(Dropout(self.drop_percantage))
 
-        model.add(Dense(units=120, activation='relu'))
-        model.add(Dropout(0.15))
+        model.add(Dense(units=self.hidden_layer_size, activation='relu'))
+        model.add(Dropout(self.drop_percantage))
 
-        model.add(Dense(units=3, activation='softmax'))
+        model.add(Dense(units=self.output_layer_size, activation='softmax'))
 
         model.compile(loss='mse', optimizer=Adam(self.learning_rate))
 
@@ -258,12 +263,12 @@ class DQN(Snake):
 
     def _advance(self):
         self.old_state = self.get_state()
-        prediction = self.model.predict(self.old_state.reshape((1, 11)))
-        self.final_move = to_categorical(np.argmax(prediction[0]), num_classes=3)
+        prediction = self.model.predict(self.old_state.reshape((1, self.input_layer_size)))
+        self.next = to_categorical(np.argmax(prediction[0]), num_classes=self.output_layer_size)
 
-        if np.array_equal(self.final_move, [0, 0, 1]):
+        if np.array_equal(self.next, [0, 0, 1]):
             self._change_direction(Direction.rights[self.direction])
-        elif np.array_equal(self.final_move, [0, 1, 0]):
+        elif np.array_equal(self.next, [0, 1, 0]):
             self._change_direction(Direction.lefts[self.direction])
 
     def _post_advance(self):
@@ -275,13 +280,13 @@ class DQN(Snake):
 
         target = self.reward
         if not self._is_dead:
-            prediction = self.model.predict(self.new_state.reshape((1, 11)))
-            target = self.reward + self.gamma * np.amax(prediction[0])
+            predict = self.model.predict(self.new_state.reshape((1, self.input_layer_size)))
+            target = self.reward + self.gamma * np.amax(predict[0])
 
-        target_f = self.model.predict(self.old_state.reshape((1, 11)))
-        target_f[0][np.argmax(self.final_move)] = target
+        target_f = self.model.predict(self.old_state.reshape((1, self.input_layer_size)))
+        target_f[0][np.argmax(self.next)] = target
 
-        self.model.fit(self.old_state.reshape((1, 11)), target_f, epochs=1, verbose=0)
+        self.model.fit(self.old_state.reshape((1, self.input_layer_size)), target_f, epochs=1, verbose=0)
 
     def _save(self):
         self.model.save_weights('weights.hdf5')

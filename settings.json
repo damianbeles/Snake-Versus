@@ -1,7 +1,7 @@
 {
     "first_player": {
-        "algorithm": "Greedy Choosing",
-        "name": "Vesca",
+        "algorithm": "Human",
+        "name": "Damian",
         "controls": [
             "a",
             "s",
@@ -32,8 +32,8 @@
         }
     },
     "second_player": {
-        "algorithm": "Human",
-        "name": "Rocky",
+        "algorithm": "Deep Q Learning",
+        "name": "Teodor",
         "controls": [
             "\u2190",
             "\u2193",
@@ -69,5 +69,5 @@
         "nof_x": 32,
         "nof_y": 32
     },
-    "speed": 10
+    "speed": 1
 }

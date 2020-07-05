@@ -19,9 +19,9 @@ import algorithms
 
 algorithmsMap = {"Human": algorithms.Human,
                  "Greedy Choosing": algorithms.GreedyChoosing,
-                 "Lee's Algorithm": algorithms.Lee,
+                 "Breadth-First Search": algorithms.Lee,
                  "Deep Q Learning": algorithms.DQN,
-                 "DFS": algorithms.DFS}
+                 "Depth-First Search": algorithms.DFS}
 
 AVAILABLE_ALGORITHMS = algorithmsMap.keys()
 
